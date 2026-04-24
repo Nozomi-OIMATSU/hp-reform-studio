@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webサイト リデザイン提案ツール — デモ版</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5EFE4;
+    --bg-card: #FCFAF5;
+    --bg-soft: #EDE5D4;
+    --ink: #1C1A17;
+    --ink-soft: #4A4640;
+    --stone: #8B847A;
+    --stone-light: #D4CCBE;
+    --line: #E0D6C4;
+    --accent: #B8432A;
+    --accent-soft: #F2D9CF;
+    --accent-bg: #FAECE4;
+    --ok: #4F6B2E;
+    --warn: #B87333;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: "Noto Sans JP", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: "Shippori Mincho B1", serif; }
+
+  /* ===== DEMO NOTICE ===== */
+  .demo-banner {
+    background: var(--ink);
+    color: var(--bg-card);
+    padding: 8px 16px;
+    font-size: 12px;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .demo-banner strong { color: #F2D9CF; }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--ink);
+    color: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Shippori Mincho B1", serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .brand-name {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: var(--stone);
+    letter-spacing: 0.05em;
+  }
+
+  /* ===== LAYOUT ===== */
+  .main {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    min-height: calc(100vh - 60px);
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+  }
+
+  /* ===== LEFT PANEL ===== */
+  .left {
+    background: var(--bg-card);
+    border-right: 1px solid var(--line);
+    padding: 28px 24px;
+    overflow-y: auto;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::before {
+    content: '';
+    width: 16px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .url-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .url-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--ink);
+    border-radius: 2px;
+  }
+  .url-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .fetch-btn {
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--bg-card);
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .fetch-btn:hover { opacity: 0.85; }
+
+  .sample-urls {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  .sample-url {
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 100px;
+    transition: all 0.2s;
+  }
+  .sample-url:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .aspects-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .aspect-card {
+    padding: 12px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .aspect-card.active {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+  }
+  .aspect-card:hover { border-color: var(--accent); }
+
+  .aspect-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .aspect-card.active .aspect-icon {
+    background: var(--accent);
+    color: var(--bg-card);
+    border-color: var(--accent);
+  }
+
+  .aspect-label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: var(--bg-card);
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+  }
+  .analyze-btn:hover {
+    background: var(--ink);
+  }
+
+  /* Suggestions */
+  .suggestions {
+    margin-top: 24px;
+  }
+
+  .summary-box {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+
+  .suggestion-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .suggestion-card:hover {
+    border-color: var(--accent);
+  }
+
+  .suggestion-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .priority-badge {
+    padding: 2px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .priority-HIGH { background: var(--accent-bg); color: var(--accent); }
+  .priority-MED { background: #F5E8D0; color: #8B5A1B; }
+  .priority-LOW { background: #EDE8E0; color: #6B6B6B; }
+
+  .aspect-tag {
+    font-size: 10px;
+    color: var(--stone);
+    letter-spacing: 0.05em;
+  }
+
+  .suggestion-title {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .suggestion-row {
+    font-size: 11px;
+    line-height: 1.6;
+    margin-bottom: 3px;
+  }
+  .suggestion-row-label {
+    color: var(--stone);
+    font-weight: 500;
+  }
+  .suggestion-row-content {
+    color: var(--ink-soft);
+  }
+
+  /* ===== RIGHT PANEL (Preview) ===== */
+  .right {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview-tabs {
+    display: flex;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+  }
+
+  .preview-tab {
+    padding: 14px 20px;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--stone);
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .preview-tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .preview-tab:hover { color: var(--ink); }
+
+  .preview-area {
+    flex: 1;
+    padding: 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+  }
+
+  .preview-empty {
+    text-align: center;
+    color: var(--stone);
+    max-width: 400px;
+  }
+
+  .preview-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: var(--stone-light);
+  }
+
+  .preview-empty-title {
+    font-family: "Shippori Mincho B1", serif;
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+
+  .preview-empty-sub {
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  /* Mock Before/After */
+  .mock-site {
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 16px rgba(28, 26, 23, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .mock-browser {
+    background: var(--bg-soft);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mock-dots { display: flex; gap: 6px; }
+  .mock-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--stone-light);
+  }
+
+  .mock-url {
+    flex: 1;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .mock-content {
+    padding: 40px 32px;
+    min-height: 400px;
+  }
+
+  .mock-hero {
+    text-align: center;
+    padding: 40px 20px;
+    border: 2px dashed var(--stone-light);
+    color: var(--stone);
+  }
+
+  /* Download Section */
+  .download-section {
+    padding: 20px 24px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--line);
+  }
+
+  .download-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--bg-card);
+    border: none;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+  }
+  .download-btn:hover { opacity: 0.85; }
+
+  /* Icon styles */
+  .icon {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .icon-sm { width: 14px; height: 14px; }
+  .icon-lg { width: 22px; height: 22px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--stone-light); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--stone); }
+</style>
+</head>
+<body>
+
+<div class="demo-banner">
+  <strong>【デモ版】</strong>これは表示デモです。実際のWebサイト取得・AI分析機能は、本番版でご利用いただけます。
+</div>
+
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon">リ</div>
+    <div>
+      <div class="brand-name">Webサイト リデザイン提案</div>
+      <div class="brand-sub">Redesign Studio — Design / Copy / SEO / UX / Image</div>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:12px; font-size:12px; color:var(--stone);">
+    <span>AutoAIze株式会社</span>
+  </div>
+</header>
+
+<div class="main">
+  <!-- LEFT PANEL -->
+  <aside class="left">
+    <div class="section-label">STEP 01 / ページを取得</div>
+    <div class="url-input-group">
+      <input type="text" class="url-input" value="https://example.com/" id="urlInput">
+      <button class="fetch-btn" onclick="mockFetch()">取得</button>
+    </div>
+    <div class="sample-urls">
+      <span class="sample-url" onclick="setSampleUrl(this)">トップ</span>
+      <span class="sample-url" onclick="setSampleUrl(this)">来店予約</span>
+      <span class="sample-url" onclick="setSampleUrl(this)">強みページ</span>
+    </div>
+
+    <div class="section-label" style="margin-top:20px;">STEP 02 / 分析観点を選ぶ</div>
+    <div class="aspects-grid">
+      <div class="aspect-card active" onclick="toggleAspect(this)">
+        <div class="aspect-icon">
+          <svg class="icon-sm icon" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+        </div>
+        <div class="aspect-label">デザイン</div>
+      </div>
+      <div class="aspect-card active" onclick="toggleAspect(this)">
+        <div class="aspect-icon">
+          <svg class="icon-sm icon" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+        </div>
+        <div class="aspect-label">文言</div>
+      </div>
+      <div class="aspect-card active" onclick="toggleAspect(this)">
+        <div class="aspect-icon">
+          <svg class="icon-sm icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="aspect-label">SEO</div>
+      </div>
+      <div class="aspect-card active" onclick="toggleAspect(this)">
+        <div class="aspect-icon">
+          <svg class="icon-sm icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        </div>
+        <div class="aspect-label">UX・導線</div>
+      </div>
+      <div class="aspect-card active" onclick="toggleAspect(this)">
+        <div class="aspect-icon">
+          <svg class="icon-sm icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div class="aspect-label">画像</div>
+      </div>
+    </div>
+
+    <button class="analyze-btn" onclick="mockAnalyze()">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M5.6 5.6l2.1 2.1m8.5 8.5 2.2 2.2M3 12h3m12 0h3M5.6 18.4l2.1-2.1m8.5-8.5 2.2-2.2"/></svg>
+      AIで分析する
+    </button>
+
+    <!-- Suggestions (sample) -->
+    <div class="suggestions" id="suggestions" style="display:none;">
+      <div class="section-label">STEP 03 / 提案を確認</div>
+      <div class="summary-box" id="summary">
+        このページは商品紹介が中心ですが、来訪者の離脱を防ぐCTA(行動喚起)の明確さと、モバイルでの視認性に改善余地があります。特にファーストビューと予約導線の強化が優先度HIGHです。
+      </div>
+      <div id="suggestion-list"></div>
+    </div>
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <section class="right">
+    <div class="preview-tabs">
+      <button class="preview-tab active" onclick="switchTab(this, 'before')">
+        <svg class="icon-sm icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        現状(Before)
+      </button>
+      <button class="preview-tab" onclick="switchTab(this, 'after')">
+        <svg class="icon-sm icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        リデザイン案(After)
+      </button>
+      <button class="preview-tab" onclick="switchTab(this, 'compare')">
+        <svg class="icon-sm icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+        並べて比較
+      </button>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+      <div class="preview-empty">
+        <div class="preview-empty-icon">◐</div>
+        <div class="preview-empty-title">URLを入力してページを取得</div>
+        <div class="preview-empty-sub">
+          左のパネルからURLを入れて「取得」ボタンを押すと<br>
+          ここに現状ページが表示されます。
+        </div>
+      </div>
+    </div>
+
+    <div class="download-section" id="downloadSection" style="display:none;">
+      <button class="download-btn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        リデザイン案のHTMLをダウンロード
+      </button>
+    </div>
+  </section>
+</div>
+
+<script>
+  // サンプル提案データ
+  const sampleSuggestions = [
+    {
+      priority: 'HIGH',
+      aspect: 'デザイン',
+      title: 'ファーストビューの視認性を強化',
+      issue: 'ヒーロー画像にテキストが重なり、スマホで読みづらい状態です。',
+      solution: 'テキストに背景オーバーレイを追加し、フォントサイズを大きめに調整します。'
+    },
+    {
+      priority: 'HIGH',
+      aspect: 'UX・導線',
+      title: '予約ボタンを全ページに固定配置',
+      issue: '予約への導線がトップページの下部にのみあり、離脱率を高めています。',
+      solution: '画面下部に常時表示される予約ボタン(追従CTA)を配置します。'
+    },
+    {
+      priority: 'MED',
+      aspect: '文言',
+      title: '見出しを顧客視点の言葉に変更',
+      issue: '「私たちの強み」など自社目線のコピーが多く、顧客メリットが伝わりにくい。',
+      solution: '「住まいを長持ちさせる3つの工夫」など、顧客が得られる価値を前面に。'
+    },
+    {
+      priority: 'MED',
+      aspect: 'SEO',
+      title: 'メタディスクリプションの最適化',
+      issue: 'description要素が設定されていないページが複数あります。',
+      solution: '各ページに120〜160字のキーワードを含む要約を追加します。'
+    },
+    {
+      priority: 'LOW',
+      aspect: '画像',
+      title: '画像のalt属性を追加',
+      issue: 'alt属性が空の画像が12枚あり、SEOとアクセシビリティに影響。',
+      solution: '各画像に内容を説明するalt属性を追記します。'
+    }
+  ];
+
+  let fetched = false;
+
+  function setSampleUrl(el) {
+    document.getElementById('urlInput').value = 'https://example.com/' + el.textContent;
+  }
+
+  function toggleAspect(el) {
+    el.classList.toggle('active');
+  }
+
+  function mockFetch() {
+    const preview = document.getElementById('previewArea');
+    preview.innerHTML = `
+      <div class="mock-site">
+        <div class="mock-browser">
+          <div class="mock-dots">
+            <div class="mock-dot"></div>
+            <div class="mock-dot"></div>
+            <div class="mock-dot"></div>
+          </div>
+          <div class="mock-url">${document.getElementById('urlInput').value}</div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-hero">
+            [デモ表示]<br>
+            本番版では、ここに実際のWebページが表示されます。
+          </div>
+          <div style="margin-top:24px; color:var(--stone); font-size:13px;">
+            ※ デモ版のため、実際のページ取得は行われません。<br>
+            左の「AIで分析する」ボタンを押すと、サンプルの提案が表示されます。
+          </div>
+        </div>
+      </div>
+    `;
+    fetched = true;
+  }
+
+  function mockAnalyze() {
+    if (!fetched) {
+      alert('先にURLを取得してください。');
+      return;
+    }
+    const list = document.getElementById('suggestion-list');
+    list.innerHTML = sampleSuggestions.map(s => `
+      <div class="suggestion-card">
+        <div class="suggestion-head">
+          <span class="priority-badge priority-${s.priority}">${s.priority}</span>
+          <span class="aspect-tag">${s.aspect}</span>
+        </div>
+        <div class="suggestion-title">${s.title}</div>
+        <div class="suggestion-row">
+          <span class="suggestion-row-label">課題:</span>
+          <span class="suggestion-row-content">${s.issue}</span>
+        </div>
+        <div class="suggestion-row">
+          <span class="suggestion-row-label">対応:</span>
+          <span class="suggestion-row-content">${s.solution}</span>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('suggestions').style.display = 'block';
+    document.getElementById('downloadSection').style.display = 'block';
+  }
+
+  function switchTab(el, tab) {
+    document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (!fetched) return;
+    const preview = document.getElementById('previewArea');
+    if (tab === 'after') {
+      preview.innerHTML = `
+        <div class="mock-site">
+          <div class="mock-browser">
+            <div class="mock-dots">
+              <div class="mock-dot"></div>
+              <div class="mock-dot"></div>
+              <div class="mock-dot"></div>
+            </div>
+            <div class="mock-url">[リデザイン案]</div>
+          </div>
+          <div class="mock-content">
+            <div class="mock-hero" style="border-color:var(--accent); color:var(--accent);">
+              [リデザイン後のデモ]<br>
+              本番版では、AIが提案した改善版ページがここに表示されます。
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (tab === 'compare') {
+      preview.innerHTML = `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; max-width:1100px;">
+          <div class="mock-site">
+            <div class="mock-browser"><div class="mock-url" style="text-align:center;">Before</div></div>
+            <div class="mock-content" style="padding:20px;">
+              <div class="mock-hero" style="padding:20px;">現状のページ</div>
+            </div>
+          </div>
+          <div class="mock-site">
+            <div class="mock-browser"><div class="mock-url" style="text-align:center;">After</div></div>
+            <div class="mock-content" style="padding:20px;">
+              <div class="mock-hero" style="padding:20px; border-color:var(--accent); color:var(--accent);">リデザイン案</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      mockFetch();
+    }
+  }
+</script>
+
+</body>
+</html>
